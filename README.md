@@ -1,32 +1,87 @@
-# React + TypeScript + Vite
+# Gold Rate Platform
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+A modern Gold Rate tracking platform built with React, TypeScript, Express, and Gold API integration.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Live Gold Rates (24K & 22K)
+- Major Cities Gold Prices
+- Interactive Price Trends
+- Gold Value Calculator
+- Smart Search & Suggestions
+- Price Alert System
+- Responsive Fintech UI
+- Real-time Market Updates
 
-## React Compiler
+## Tech Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Frontend
+- React
+- TypeScript
+- Tailwind CSS
+- React Router
+- Recharts
+- Framer Motion
+- TanStack Query
 
-## Expanding the Oxlint configuration
+### Backend
+- Node.js
+- Express.js
+- Axios
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+### Data Source
+- Gold API
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+## Installation
+
+### Backend
+
+```bash
+cd server
+npm install
+npm run dev
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+Backend runs on:
+
+```txt
+http://localhost:5001
+```
+
+### Frontend
+
+```bash
+cd client
+npm install
+npm run dev
+```
+
+Frontend runs on:
+
+```txt
+http://localhost:5173
+```
+
+## Environment Variables
+
+Create a `.env` file in the server directory:
+
+```env
+GOLD_API_KEY=your_api_key
+PORT=5001
+```
+
+## API Endpoints
+
+```http
+GET  /api/home
+GET  /api/cities/:city
+GET  /api/search?q=
+POST /api/calculator
+POST /api/alerts
+GET  /api/health
+```
+
+## License
+
+MIT License
