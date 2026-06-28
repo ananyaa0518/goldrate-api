@@ -5,7 +5,6 @@ dotenv.config();
 
 // Configuration
 const GOLD_API_KEY = process.env.GOLD_API_KEY || '';
-const USE_MOCK_DATA = process.env.USE_MOCK_DATA !== 'false'; // Default to true if not set to 'false'
 const CACHE_DURATION_MS = 10 * 60 * 1000; // 10 minutes cache
 
 export interface GoldRatesState {
@@ -35,48 +34,15 @@ export interface CityRates {
 let cachedData: GoldRatesState | null = null;
 let lastFetchTime = 0;
 
-// High fidelity mock provider data matching the screenshots
-const sampleGoldRates = (): GoldRatesState => {
-  const timestampStr = new Date().toLocaleString('en-IN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: true,
-  });
-
-  return {
-    bangalore: { city: 'Bangalore', price24K: 7245, price22K: 6643, change: 0.25, timestamp: timestampStr },
-    chennai: { city: 'Chennai', price24K: 7255, price22K: 6653, change: 0.18, timestamp: timestampStr },
-    hyderabad: { city: 'Hyderabad', price24K: 7240, price22K: 6640, change: -0.12, timestamp: timestampStr },
-    mumbai: { city: 'Mumbai', price24K: 7260, price22K: 6658, change: 0.32, timestamp: timestampStr },
-    delhi: { city: 'Delhi', price24K: 7250, price22K: 6648, change: 0.15, timestamp: timestampStr },
-    pune: { city: 'Pune', price24K: 7258, price22K: 6656, change: 0.28, timestamp: timestampStr },
-    kolkata: { city: 'Kolkata', price24K: 7238, price22K: 6638, change: -0.08, timestamp: timestampStr },
-    coimbatore: { city: 'Coimbatore', price24K: 7253, price22K: 6651, change: 0.20, timestamp: timestampStr },
-    ahmedabad: { city: 'Ahmedabad', price24K: 7235, price22K: 6632, change: 0.12, timestamp: timestampStr },
-    jaipur: { city: 'Jaipur', price24K: 7248, price22K: 6645, change: -0.05, timestamp: timestampStr },
-    lucknow: { city: 'Lucknow', price24K: 7252, price22K: 6647, change: 0.10, timestamp: timestampStr },
-    patna: { city: 'Patna', price24K: 7230, price22K: 6625, change: -0.15, timestamp: timestampStr }
-  };
-};
-
 export const goldApiService = {
   getRates: async (): Promise<GoldRatesState> => {
-    // 1. Check if mock provider is forced
-    if (USE_MOCK_DATA) {
-      console.log('[Gold Service] Using mock data provider (development mode)');
-      return sampleGoldRates();
-    }
-
-    // 2. Check if cache is still valid
+    // 1. Check if cache is still valid
     if (cachedData && (Date.now() - lastFetchTime < CACHE_DURATION_MS)) {
       console.log('[Gold Service] Returning cached rates');
       return cachedData;
     }
 
-    // 3. Verify API Key
+    // 2. Verify API Key
     if (!GOLD_API_KEY || GOLD_API_KEY.trim() === '') {
       console.error('[Gold Service] Error: GOLD_API_KEY is not configured');
       throw new Error('KEY_MISSING');
@@ -168,7 +134,7 @@ export const goldApiService = {
         throw new Error('NETWORK_ERROR');
       }
 
-      // Default fallback when not forcing mock
+      // Default fallback when API request fails
       throw new Error('NETWORK_ERROR');
     }
   },

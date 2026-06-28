@@ -38,44 +38,6 @@ function handleServerError(res: Response, err: Error) {
   }
 }
 
-// Generate price fluctuations coordinates per city base price
-const generateChartData = (basePrice: number) => {
-  const dates = ['Feb 15', 'Feb 16', 'Feb 17', 'Feb 18', 'Feb 19', 'Feb 20', 'Feb 21'];
-  const multipliers7d = [0.992, 0.995, 0.993, 0.997, 0.994, 0.998, 1.0];
-  const data7d = dates.map((date, i) => ({
-    date,
-    price24K: Math.round(basePrice * multipliers7d[i]),
-    price22K: Math.round((basePrice * 6643 / 7245) * multipliers7d[i]),
-  }));
-
-  const data30d = Array.from({ length: 30 }, (_, i) => {
-    const day = 21 - (29 - i);
-    const dateStr = day > 0 ? `Feb ${day}` : `Jan ${31 + day}`;
-    const bounce = 0.97 + Math.sin(i * 0.3) * 0.015 + (i * 0.001);
-    return {
-      date: dateStr,
-      price24K: Math.round(basePrice * bounce),
-      price22K: Math.round((basePrice * 6643 / 7245) * bounce),
-    };
-  });
-
-  const data1y = [
-    { date: 'Mar 2025', price24K: Math.round(basePrice * 0.88), price22K: Math.round(basePrice * 0.88 * 0.9167) },
-    { date: 'May 2025', price24K: Math.round(basePrice * 0.90), price22K: Math.round(basePrice * 0.90 * 0.9167) },
-    { date: 'Jul 2025', price24K: Math.round(basePrice * 0.91), price22K: Math.round(basePrice * 0.91 * 0.9167) },
-    { date: 'Sep 2025', price24K: Math.round(basePrice * 0.94), price22K: Math.round(basePrice * 0.94 * 0.9167) },
-    { date: 'Nov 2025', price24K: Math.round(basePrice * 0.96), price22K: Math.round(basePrice * 0.96 * 0.9167) },
-    { date: 'Jan 2026', price24K: Math.round(basePrice * 0.98), price22K: Math.round(basePrice * 0.98 * 0.9167) },
-    { date: 'Feb 2026', price24K: basePrice, price22K: Math.round(basePrice * 0.9167) },
-  ];
-
-  return {
-    '7d': data7d,
-    '30d': data30d,
-    '1y': data1y,
-  };
-};
-
 // GET /api/home - Return live statistics, grid list and trends
 app.get('/api/home', async (req: Request, res: Response) => {
   try {
@@ -99,8 +61,6 @@ app.get('/api/home', async (req: Request, res: Response) => {
       change: r.change,
     }));
 
-    const chartData = generateChartData(bangaloreData.price24K);
-
     res.json({
       livePrice: {
         city: 'Bangalore',
@@ -111,7 +71,11 @@ app.get('/api/home', async (req: Request, res: Response) => {
       },
       majorCities,
       ticker: tickerItems,
-      chartData,
+      chartData: {
+        '7d': [],
+        '30d': [],
+        '1y': [],
+      },
     });
   } catch (err: any) {
     handleServerError(res, err);
@@ -130,11 +94,13 @@ app.get('/api/cities/:city', async (req: Request, res: Response) => {
       return;
     }
 
-    const chartData = generateChartData(cityData.price24K);
-
     res.json({
       cityDetails: cityData,
-      chartData,
+      chartData: {
+        '7d': [],
+        '30d': [],
+        '1y': [],
+      },
     });
   } catch (err: any) {
     handleServerError(res, err);
