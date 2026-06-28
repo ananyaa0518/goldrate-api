@@ -1,6 +1,10 @@
 # Gold Rate Platform
 
 A modern Gold Rate tracking platform built with React, TypeScript, Express, and Gold API integration.
+## Live Demo
+
+- **Frontend:** [https://cerulean-dragon-ca686b.netlify.app/](https://cerulean-dragon-ca686b.netlify.app/)
+- **Backend API:** [https://goldrate-api.onrender.com/api/home](https://goldrate-api.onrender.com/api/home)
 
 ## Features
 
