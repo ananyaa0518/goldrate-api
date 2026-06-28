@@ -114,6 +114,7 @@ export const goldApiService = {
       lastFetchTime = Date.now();
       
       console.log('[Gold Service] Cache updated successfully with live prices');
+      console.log('[Gold Service] Sample Bangalore rate:', cachedData.bangalore);
       return cachedData;
     } catch (err: any) {
       console.error('[Gold Service] Live API request failed:', err.message);

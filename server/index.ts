@@ -40,6 +40,14 @@ function handleServerError(res: Response, err: Error) {
 
 // Generate realistic price fluctuations based on current price and market volatility
 const generateChartData = (basePrice: number) => {
+  // Validate input
+  if (!basePrice || basePrice <= 0) {
+    console.warn('[generateChartData] Invalid basePrice:', basePrice, '- using default 7200');
+    basePrice = 7200; // Default fallback
+  }
+
+  console.log(`[generateChartData] Generating chart data with basePrice: ₹${basePrice}`);
+
   // Generate 7-day chart with realistic daily volatility (~0.5-1%)
   const data7d = Array.from({ length: 7 }, (_, i) => {
     const daysAgo = 6 - i;
@@ -94,11 +102,20 @@ const generateChartData = (basePrice: number) => {
     };
   });
 
-  return {
+  const result = {
     '7d': data7d,
     '30d': data30d,
     '1y': data1y,
   };
+
+  console.log(`[generateChartData] Generated chart data:`, {
+    basePrice,
+    '7d': { count: data7d.length, sample: data7d[data7d.length - 1] },
+    '30d': { count: data30d.length, sample: data30d[data30d.length - 1] },
+    '1y': { count: data1y.length, sample: data1y[data1y.length - 1] },
+  });
+
+  return result;
 };
 
 // GET /api/home - Return live statistics, grid list and trends
@@ -126,7 +143,12 @@ app.get('/api/home', async (req: Request, res: Response) => {
 
     const chartData = generateChartData(bangaloreData.price24K);
 
-    res.json({
+    console.log('[API /home] Generating response with chart data:');
+    console.log('[API /home] 7d points:', chartData['7d'].length);
+    console.log('[API /home] 30d points:', chartData['30d'].length);
+    console.log('[API /home] 1y points:', chartData['1y'].length);
+
+    const response = {
       livePrice: {
         city: 'Bangalore',
         price24K: bangaloreData.price24K,
@@ -137,8 +159,12 @@ app.get('/api/home', async (req: Request, res: Response) => {
       majorCities,
       ticker: tickerItems,
       chartData,
-    });
+    };
+
+    console.log('[API /home] Full response:', JSON.stringify(response, null, 2));
+    res.json(response);
   } catch (err: any) {
+    console.error('[API /home] Error:', err.message);
     handleServerError(res, err);
   }
 });
@@ -146,22 +172,35 @@ app.get('/api/home', async (req: Request, res: Response) => {
 // GET /api/cities/:city - Get rates for a specific city
 app.get('/api/cities/:city', async (req: Request, res: Response) => {
   try {
+    const cityParamStr = Array.isArray(req.params.city) ? req.params.city[0] : req.params.city;
+    const cityParam = cityParamStr.toLowerCase() as keyof GoldRatesState;
+    console.log(`[API /cities/:city] Fetching data for city: ${cityParam}`);
+    
     const rates = await goldApiService.getRates();
-    const cityParam = req.params.city.toLowerCase() as keyof GoldRatesState;
     const cityData = rates[cityParam];
 
     if (!cityData) {
+      console.warn(`[API /cities/:city] City not found: ${req.params.city}`);
       res.status(404).json({ error: `City '${req.params.city}' not found.` });
       return;
     }
 
     const chartData = generateChartData(cityData.price24K);
 
-    res.json({
+    console.log(`[API /cities/:city] Chart data generated for ${cityData.city}:`);
+    console.log(`[API /cities/:city] 7d points: ${chartData['7d'].length}`);
+    console.log(`[API /cities/:city] 30d points: ${chartData['30d'].length}`);
+    console.log(`[API /cities/:city] 1y points: ${chartData['1y'].length}`);
+
+    const response = {
       cityDetails: cityData,
       chartData,
-    });
+    };
+
+    console.log(`[API /cities/:city] Response for ${cityData.city}:`, JSON.stringify(response, null, 2));
+    res.json(response);
   } catch (err: any) {
+    console.error('[API /cities/:city] Error:', err.message);
     handleServerError(res, err);
   }
 });

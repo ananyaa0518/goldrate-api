@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   ResponsiveContainer,
   LineChart,
@@ -29,7 +29,39 @@ export const PriceChart: React.FC<PriceChartProps> = ({ city, data }) => {
   const [timeframe, setTimeframe] = useState<'7d' | '30d' | '1y'>('7d');
   const [selectedPurity, setSelectedPurity] = useState<'24K' | '22K'>('24K');
 
-  const chartData = data[timeframe] || data['7d'];
+  // Debug logging on component mount and data changes
+  useEffect(() => {
+    console.log('[PriceChart] Component mounted/updated');
+    console.log('[PriceChart] Received city:', city);
+    console.log('[PriceChart] Received data:', data);
+    console.log('[PriceChart] Data structure:', {
+      '7d': data?.['7d']?.length || 0,
+      '30d': data?.['30d']?.length || 0,
+      '1y': data?.['1y']?.length || 0,
+    });
+  }, [city, data]);
+
+  // Log when timeframe changes
+  useEffect(() => {
+    console.log('[PriceChart] Selected timeframe:', timeframe);
+    console.log('[PriceChart] Data for timeframe:', data?.[timeframe] || []);
+  }, [timeframe, data]);
+
+  // Log when purity changes
+  useEffect(() => {
+    console.log('[PriceChart] Selected gold type:', selectedPurity);
+  }, [selectedPurity]);
+
+  // Validate and get chart data
+  const chartData = data?.[timeframe] || data?.['7d'] || [];
+  const isDataEmpty = !chartData || chartData.length === 0;
+
+  console.log('[PriceChart] Chart data to render:', {
+    timeframe,
+    isEmpty: isDataEmpty,
+    length: chartData?.length,
+    dataKeys: chartData?.[0] ? Object.keys(chartData[0]) : [],
+  });
 
   // Format currency for axis values
   const formatYAxis = (tick: number) => {
@@ -111,38 +143,68 @@ export const PriceChart: React.FC<PriceChartProps> = ({ city, data }) => {
 
           </div>
 
-          {/* Chart Display Area */}
-          <div className="h-[320px] w-full text-[10px] text-slate-400">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartData} margin={{ top: 10, right: 10, left: 10, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis
-                  dataKey="date"
-                  tickLine={false}
-                  axisLine={{ stroke: '#e2e8f0' }}
-                  tick={{ fill: '#94a3b8', fontSize: 10 }}
-                  dy={10}
-                />
-                <YAxis
-                  domain={['auto', 'auto']}
-                  tickLine={false}
-                  axisLine={{ stroke: '#e2e8f0' }}
-                  tickFormatter={formatYAxis}
-                  tick={{ fill: '#94a3b8', fontSize: 10 }}
-                  dx={-10}
-                />
-                <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#f1f5f9' }} />
-                <Line
-                  type="monotone"
-                  dataKey={selectedPurity === '24K' ? 'price24K' : 'price22K'}
-                  stroke="#eab308"
-                  strokeWidth={2.5}
-                  dot={{ r: 4, stroke: '#eab308', strokeWidth: 1, fill: '#fff' }}
-                  activeDot={{ r: 6, fill: '#eab308', stroke: '#fff', strokeWidth: 2 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
+          {/* Chart Display Area or Fallback */}
+          {isDataEmpty ? (
+            <div className="h-[320px] w-full flex items-center justify-center bg-slate-50/50 rounded-lg border border-dashed border-slate-200">
+              <div className="text-center">
+                <svg
+                  className="mx-auto h-12 w-12 text-slate-300"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                  />
+                </svg>
+                <p className="mt-2 text-sm font-medium text-slate-500">
+                  Historical data unavailable
+                </p>
+                <p className="mt-1 text-xs text-slate-400">
+                  Try again in a moment or check back later
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="h-[320px] w-full text-[10px] text-slate-400">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart 
+                  data={chartData}
+                  margin={{ top: 10, right: 10, left: 10, bottom: 5 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                  <XAxis
+                    dataKey="date"
+                    tickLine={false}
+                    axisLine={{ stroke: '#e2e8f0' }}
+                    tick={{ fill: '#94a3b8', fontSize: 10 }}
+                    dy={10}
+                  />
+                  <YAxis
+                    domain={['auto', 'auto']}
+                    tickLine={false}
+                    axisLine={{ stroke: '#e2e8f0' }}
+                    tickFormatter={formatYAxis}
+                    tick={{ fill: '#94a3b8', fontSize: 10 }}
+                    dx={-10}
+                  />
+                  <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#f1f5f9' }} />
+                  <Line
+                    type="monotone"
+                    dataKey={selectedPurity === '24K' ? 'price24K' : 'price22K'}
+                    stroke="#eab308"
+                    strokeWidth={2.5}
+                    dot={{ r: 4, stroke: '#eab308', strokeWidth: 1, fill: '#fff' }}
+                    activeDot={{ r: 6, fill: '#eab308', stroke: '#fff', strokeWidth: 2 }}
+                    isAnimationActive={true}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          )}
 
         </Card>
 

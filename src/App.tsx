@@ -103,6 +103,17 @@ function GoldRateDashboard() {
 
   const currentChartData = cityData?.chartData || homeData.chartData;
 
+  // Debug logging for chart data
+  React.useEffect(() => {
+    console.log('[App] Current city rates:', currentCityRates);
+    console.log('[App] Current chart data:', {
+      '7d': currentChartData?.['7d']?.length || 0,
+      '30d': currentChartData?.['30d']?.length || 0,
+      '1y': currentChartData?.['1y']?.length || 0,
+    });
+    console.log('[App] Full chart data:', currentChartData);
+  }, [currentCityRates, currentChartData]);
+
   const handleCitySelect = (city: string) => {
     setSelectedCity(city.toLowerCase());
   };

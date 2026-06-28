@@ -61,11 +61,31 @@ export interface AlertResponse {
 export const goldApi = {
   getHomeData: async (): Promise<HomeResponse> => {
     const { data } = await api.get<HomeResponse>('/home');
+    console.log('[API Client] Home data received:', {
+      livePrice: data.livePrice,
+      majorCities: data.majorCities.length,
+      ticker: data.ticker.length,
+      chartData: {
+        '7d': data.chartData['7d'].length,
+        '30d': data.chartData['30d'].length,
+        '1y': data.chartData['1y'].length,
+      },
+    });
+    console.log('[API Client] Full home response:', data);
     return data;
   },
 
   getCityData: async (city: string): Promise<CityResponse> => {
     const { data } = await api.get<CityResponse>(`/cities/${city}`);
+    console.log(`[API Client] City data received for ${city}:`, {
+      city: data.cityDetails.city,
+      chartData: {
+        '7d': data.chartData['7d'].length,
+        '30d': data.chartData['30d'].length,
+        '1y': data.chartData['1y'].length,
+      },
+    });
+    console.log('[API Client] Full city response:', data);
     return data;
   },
 
