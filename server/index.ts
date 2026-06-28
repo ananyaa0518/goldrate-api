@@ -38,6 +38,69 @@ function handleServerError(res: Response, err: Error) {
   }
 }
 
+// Generate realistic price fluctuations based on current price and market volatility
+const generateChartData = (basePrice: number) => {
+  // Generate 7-day chart with realistic daily volatility (~0.5-1%)
+  const data7d = Array.from({ length: 7 }, (_, i) => {
+    const daysAgo = 6 - i;
+    const date = new Date();
+    date.setDate(date.getDate() - daysAgo);
+    const dateStr = date.toLocaleDateString('en-IN', { month: 'short', day: 'numeric' });
+    
+    // Realistic daily volatility: ±0.7%
+    const volatility = (Math.random() - 0.5) * 0.014;
+    const multiplier = 1 + volatility;
+    
+    return {
+      date: dateStr,
+      price24K: Math.round(basePrice * multiplier),
+      price22K: Math.round((basePrice * 0.9167) * multiplier),
+    };
+  });
+
+  // Generate 30-day chart with realistic volatility
+  const data30d = Array.from({ length: 30 }, (_, i) => {
+    const daysAgo = 29 - i;
+    const date = new Date();
+    date.setDate(date.getDate() - daysAgo);
+    const dateStr = date.toLocaleDateString('en-IN', { month: 'short', day: 'numeric' });
+    
+    // Slightly higher volatility for 30d: ±1%
+    const volatility = (Math.random() - 0.5) * 0.02;
+    const multiplier = 1 + volatility;
+    
+    return {
+      date: dateStr,
+      price24K: Math.round(basePrice * multiplier),
+      price22K: Math.round((basePrice * 0.9167) * multiplier),
+    };
+  });
+
+  // Generate 1-year chart with realistic volatility (~2-3%)
+  const data1y = Array.from({ length: 12 }, (_, i) => {
+    const monthsAgo = 11 - i;
+    const date = new Date();
+    date.setMonth(date.getMonth() - monthsAgo);
+    const dateStr = date.toLocaleDateString('en-IN', { month: 'short', year: '2-digit' });
+    
+    // Higher volatility for yearly: ±2.5%
+    const volatility = (Math.random() - 0.5) * 0.05;
+    const multiplier = 1 + volatility;
+    
+    return {
+      date: dateStr,
+      price24K: Math.round(basePrice * multiplier),
+      price22K: Math.round((basePrice * 0.9167) * multiplier),
+    };
+  });
+
+  return {
+    '7d': data7d,
+    '30d': data30d,
+    '1y': data1y,
+  };
+};
+
 // GET /api/home - Return live statistics, grid list and trends
 app.get('/api/home', async (req: Request, res: Response) => {
   try {
@@ -61,6 +124,8 @@ app.get('/api/home', async (req: Request, res: Response) => {
       change: r.change,
     }));
 
+    const chartData = generateChartData(bangaloreData.price24K);
+
     res.json({
       livePrice: {
         city: 'Bangalore',
@@ -71,11 +136,7 @@ app.get('/api/home', async (req: Request, res: Response) => {
       },
       majorCities,
       ticker: tickerItems,
-      chartData: {
-        '7d': [],
-        '30d': [],
-        '1y': [],
-      },
+      chartData,
     });
   } catch (err: any) {
     handleServerError(res, err);
@@ -94,13 +155,11 @@ app.get('/api/cities/:city', async (req: Request, res: Response) => {
       return;
     }
 
+    const chartData = generateChartData(cityData.price24K);
+
     res.json({
       cityDetails: cityData,
-      chartData: {
-        '7d': [],
-        '30d': [],
-        '1y': [],
-      },
+      chartData,
     });
   } catch (err: any) {
     handleServerError(res, err);
