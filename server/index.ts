@@ -10,6 +10,12 @@ const PORT = process.env.PORT || 5001;
 
 app.use(cors());
 app.use(express.json());
+app.get('/api/health', (_, res) => {
+  res.json({
+    status: 'ok',
+    service: 'goldrate-api',
+  });
+});
 
 // Handle backend service errors and return corresponding error codes
 function handleServerError(res: Response, err: Error) {
